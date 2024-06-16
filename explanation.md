@@ -1,8 +1,6 @@
 The pattern defeating quicksort (PDQsort) is a variation of the quicksort algorithm designed to handle pathological cases more efficiently. Traditional quicksort can degrade to O(n²) time complexity on certain input sequences, such as already sorted or nearly sorted arrays. PDQsort incorporates techniques from both introsort and insertion sort to mitigate these issues.
 
-<div style="text-align: center;">
 # --------  Key Features of PDQsort  --------
-</div>
 
 Introspection:
 
@@ -20,9 +18,7 @@ Adaptive Sorting:
 
 The algorithm adapts to the degree of disorder in the input. If the input is partially sorted, PDQsort takes advantage of this to sort more efficiently than a generic quicksort.
 
-<div style="text-align: center;">
 # --------  How PDQsort Works  --------
-</div>
 
 Pivot Selection:
 
@@ -40,9 +36,7 @@ Insertion Sort for Small Partitions:
 
 For small partitions or nearly sorted arrays, PDQsort switches to insertion sort, which is faster for these cases.
 
-<div style="text-align: center;">
 # --------  Advantages of PDQsort  --------
-</div>
 
 Performance:
 
@@ -56,9 +50,7 @@ Stability:
 
 While not inherently stable, PDQsort can be modified to maintain stability in sorting.
 
-<div style="text-align: center;">
 # --------  Use Cases  --------
-</div>
 
 PDQsort is particularly useful in scenarios where input data may exhibit patterns or be nearly sorted, such as:
 
@@ -73,20 +65,14 @@ Standard sorting routines where input characteristics are unpredictable.
 
 In summary, PDQsort enhances the quicksort algorithm by incorporating pattern detection, adaptive sorting, and introspection, ensuring robust performance across various input scenarios.
 
-<div style="text-align: center;">
 # --------  Author  --------
-</div>
 
 nRanzo
 
-<div style="text-align: center;">
 # --------  Special thanks  --------
-</div>
 
 Orson Peters
 
-<div style="text-align: center;">
 # --------  History  --------
-</div>
 
 PDQsort was developed by Orson Peters, a Dutch programmer. He created PDQsort to address the limitations of traditional quicksort and to improve its performance on specific patterns of input data. PDQsort is widely recognized for its efficiency and adaptability, and it has been incorporated into the C++ Standard Library as the default sorting algorithm since C++17.
