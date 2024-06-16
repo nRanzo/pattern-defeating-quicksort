@@ -1,78 +1,58 @@
-The pattern defeating quicksort (PDQsort) is a variation of the quicksort algorithm designed to handle pathological cases more efficiently. Traditional quicksort can degrade to O(n²) time complexity on certain input sequences, such as already sorted or nearly sorted arrays. PDQsort incorporates techniques from both introsort and insertion sort to mitigate these issues.
+Pattern Defeating Quicksort
+-------
 
-# --------  Key Features of PDQsort  --------
+Pattern-defeating quicksort (pdqsort) is a novel sorting algorithm that combines the fast average case of randomized quicksort with the fast worst case of heapsort, while achieving linear time on inputs with certain patterns. It's an extension and improvement of David Mussers introsort. All code is available for free under the Creative Common license.
 
-Introspection:
+    Best        Average     Worst       Memory      Stable      Deterministic
+    n           n log n     n log n     log n       No          Yes
 
-PDQsort uses introspection to switch from quicksort to heapsort when the recursion depth exceeds a certain limit. This ensures that the worst-case time complexity is kept at O(n log n).
+### Usage
 
-Partitioning:
+`pdqsort` is a drop-in replacement for [`std::sort`](http://en.cppreference.com/w/cpp/algorithm/sort). Just replace a call to `std::sort` with `pdqsort` to start using pattern-defeating quicksort. If your comparison function is branchless, you can call `pdqsort_branchless` for a potential big speedup. If you are using C++11, the type you're sorting is arithmetic and your comparison function is not given or is `std::less`/`std::greater`, `pdqsort` automatically delegates to `pdqsort_branchless`.
 
-It uses a median-of-medians technique to choose a pivot, improving the chance of balanced partitions. This reduces the likelihood of encountering worst-case scenarios.
+### Benchmark
 
-Detecting Patterns:
+A comparison of pdqsort and GCC's `std::sort` and `std::stable_sort` with various input distributions:
 
-PDQsort incorporates pattern detection to identify and handle already sorted or nearly sorted sequences. When a sorted pattern is detected, it switches to insertion sort, which is efficient for small or nearly sorted arrays.
+![Performance graph](http://i.imgur.com/1RnIGBO.png)
 
-Adaptive Sorting:
+Compiled with `-std=c++11 -O2 -m64 -march=native`.
 
-The algorithm adapts to the degree of disorder in the input. If the input is partially sorted, PDQsort takes advantage of this to sort more efficiently than a generic quicksort.
+### Visualization
 
-# --------  How PDQsort Works  --------
+A visualization of pattern-defeating quicksort sorting a ~200 element array with some duplicates. Generated using Timo Bingmann's [The Sound of Sorting](http://panthema.net/2013/sound-of-sorting/) program, a tool that has been invaluable during the development of pdqsort. For this visualization the cutoff point for insertion sort was lowered to 8 elements.
 
-Pivot Selection:
+![Visualization](http://i.imgur.com/QzFG09F.gif)
 
-Selects pivots using a median-of-medians approach to ensure good partitioning.
+### The best case
 
-Recursion Depth Monitoring:
+pdqsort is designed to run in linear time for certain best-case patterns: inputs in strictly ascending or descending order, equal elements, or ascending order followed by one out-of-place element.
 
-Monitors the recursion depth and switches to heapsort if it exceeds a certain threshold.
+For equal elements, a smart partitioning scheme always puts equal elements in the partition containing elements greater than the pivot. When a new pivot is chosen, it's compared to the greatest element in the partition before it. If they are equal, we can derive there are no smaller elements. When this happens, we filter out all elements equal to the pivot.
 
-Pattern Detection:
+For other patterns, we check after every partition if any swaps were made. If no swaps were made and the partition was balanced, we use insertion sort, which aborts if too many moves are required.
 
-During partitioning, it detects if the array is already sorted or exhibits a pattern. If detected, it may use insertion sort or avoid further recursion.
+### The average case
 
-Insertion Sort for Small Partitions:
+On average case data where no patterns are detected, pdqsort is effectively a quicksort using median-of-3 pivot selection, switching to insertion sort if the number of elements is small. The overhead for detecting best-case patterns is minimal.
 
-For small partitions or nearly sorted arrays, PDQsort switches to insertion sort, which is faster for these cases.
+pdqsort speeds up sorting large arrays (1000+ elements) using a technique from "BlockQuicksort: How Branch Mispredictions don't affect Quicksort" by Stefan Edelkamp and Armin Weiss. This technique bypasses the branch predictor by using small buffers in L1 cache for indices of elements to be swapped, filled in a branch-free way:
 
-# --------  Advantages of PDQsort  --------
+buffer_num = 0; buffer_max_size = 64;
+for (int i = 0; i < buffer_max_size; ++i) {
+    buffer[buffer_num] = i; buffer_num += (elements[i] < pivot);
+}
 
-Performance:
+This speedup occurs only if the comparison function is branchless. By default, pdqsort detects this if using C++11 or higher, the type is arithmetic, and the comparison is std::less or std::greater. Use pdqsort_branchless explicitly for branchless partitioning.
 
-PDQsort maintains average-case performance similar to quicksort but avoids the O(n²) worst-case scenario.
+The worst case
+Quicksort performs poorly on patterned inputs due to partition-based sorting. Choosing a bad pivot results in many comparisons with little progress. To avoid this, traditionally, pivot selection is randomized. Introsort switches to heapsort if recursion depth is too big. pdqsort shuffles elements deterministically when encountering a "bad" partition, switching to heapsort if too many bad partitions are found.
 
-Adaptability:
+Bad partitions
+A bad partition occurs when the pivot's position is under 12.5% or over 87.5% percentile, making the partition highly unbalanced. In these cases, pdqsort shuffles four elements at fixed locations for both partitions. If more than log(n) bad partitions occur, pdqsort switches to heapsort.
 
-It adapts to the input data's order, optimizing the sorting process for partially sorted arrays.
+An upper bound of quicksort's worst-case runtime is approximated by:
 
-Stability:
+T(n, p) = n + T(p(n-1), p) + T((1-p)(n-1), p)
 
-While not inherently stable, PDQsort can be modified to maintain stability in sorting.
-
-# --------  Use Cases  --------
-
-PDQsort is particularly useful in scenarios where input data may exhibit patterns or be nearly sorted, such as:
-
-Databases:
-Sorting data retrieved in a nearly sorted manner.
-
-Real-time Systems:
-Efficient sorting where worst-case performance must be controlled.
-
-General-purpose Libraries:
-Standard sorting routines where input characteristics are unpredictable.
-
-In summary, PDQsort enhances the quicksort algorithm by incorporating pattern detection, adaptive sorting, and introspection, ensuring robust performance across various input scenarios.
-
-# --------  Author  --------
-
-nRanzo
-
-# --------  Special thanks  --------
-
-Orson Peters
-
-# --------  History  --------
-
-PDQsort was developed by Orson Peters, a Dutch programmer. He created PDQsort to address the limitations of traditional quicksort and to improve its performance on specific patterns of input data. PDQsort is widely recognized for its efficiency and adaptability, and it has been incorporated into the C++ Standard Library as the default sorting algorithm since C++17.
+Choosing p = 1/8 ensures that heapsort is used only if it speeds up the sorting, balancing quicksort's best and worst cases.
