@@ -14,7 +14,7 @@ Pattern-defeating quicksort (pdqsort) is a novel sorting algorithm that combines
 
 A comparison of pdqsort and GCC's `std::sort` and `std::stable_sort` with various input distributions:
 
-![Performance graph](http://i.imgur.com/1RnIGBO.png)
+  <img src="./example.png" width=auto height=auto />
 
 Compiled with `-std=c++11 -O2 -m64 -march=native`.
 
@@ -22,7 +22,7 @@ Compiled with `-std=c++11 -O2 -m64 -march=native`.
 
 A visualization of pattern-defeating quicksort sorting a ~200 element array with some duplicates. Generated using Timo Bingmann's [The Sound of Sorting](http://panthema.net/2013/sound-of-sorting/) program, a tool that has been invaluable during the development of pdqsort. For this visualization the cutoff point for insertion sort was lowered to 8 elements.
 
-![Visualization](http://i.imgur.com/QzFG09F.gif)
+  <img src="./qcksort.gif" width=auto height=auto />
 
 ### The best case
 
